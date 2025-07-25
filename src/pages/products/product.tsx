@@ -330,7 +330,7 @@ const Product = () => {
 	};
 
 	return (
-		<section className="py-16 w-11/12 mx-auto">
+		<section className="py-8 xl:py-16 w-11/12 mx-auto">
 
 			{/* header */}
 			<div className="row pb-5">
@@ -495,7 +495,7 @@ const Product = () => {
 				</div>
 
 				{/* Product Price Card */}
-				<div className="w-full lg:sticky top-10 xl:top-32">
+				<div className="w-full xl:sticky mt-6 top-10 xl:top-32">
 					<div className="w-full xl:max-w-full xl:mx-auto">
 						<Card className="shadow-lg">
 							{cartLoading && (
@@ -872,8 +872,9 @@ const Product = () => {
 
 							<CardFooter className="flex items-start justify-start gap-4">
 								{!loading && product && (
-									<div className="w-full flex gap-2 items-center">
+									<div className="w-full flex gap-1 xl:gap-3 items-center">
 										<Button
+										className="w-36 text-sm lg:text-lg lg:w-44 xl:text-xl xl:w-60"
 											onClick={() => {
 												handleAddToCart().then(() => {
 													navigate(routes.checkout.path);
@@ -890,6 +891,7 @@ const Product = () => {
 											Send Order Request
 										</Button>
 										<Button
+										className="w-30 text-sm lg:text-lg lg:w-40 xl:text-xl xl:w-52"
 											onClick={handleAddToCart}
 											disabled={matchedVariant ? false : true}
 											variant="secondary"
@@ -904,7 +906,7 @@ const Product = () => {
 					</div>
 				</div>
 
-				<div className="w-full col-span-2 lg:-mt-[400px] xl:pr-3 overflow-hidden">
+				<div className="w-full col-span-2 mt-10 xl:-mt-[400px] xl:pr-3 overflow-hidden">
 					{!loading && product && <ProductAttributes product={product} />}
 					{loading &&
 						Array(5)

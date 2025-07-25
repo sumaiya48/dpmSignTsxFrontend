@@ -12,7 +12,7 @@ const Footer = () => {
 	return (
 		<section className="w-full h-auto py-6 bg-zinc-900 text-white">
 			<div className="row border-b-2 border-[#CFCFCF] py-12 pr-0 lg:pr-8">
-				<div className="w-full h-auto grid grid-cols-1 place-items-center lg:grid-cols-4 gap-6 lg:gap-0">
+				<div className="w-full h-auto grid grid-cols-1 place-items-center md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0">
 					{/* Policies Section */}
 					<div className="w-full flex items-center justify-center">
 						<div className="flex items-center lg:items-start justify-between gap-4 flex-col">
