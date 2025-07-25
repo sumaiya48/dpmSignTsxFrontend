@@ -19,7 +19,7 @@ import {
 	CardFooter,
 	CardHeader,
 } from "@/components/ui/card";
-import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react"; // CORRECTED LINE HERE
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
@@ -105,7 +105,7 @@ const Product = () => {
 				)
 			)
 		);
-	}, [selectedVariationItems]);
+	}, [selectedVariationItems, product]); // Added product as dependency as it contains variants
 
 	const calculateFinalPricing = (
 		product: ProductProps,
@@ -124,7 +124,14 @@ const Product = () => {
 			discountPercentage: maxDiscount,
 		} = product;
 
-		if (!basePrice || !discountStart || !discountEnd || !maxDiscount)
+		if (
+			!basePrice ||
+			!matchedVariant ||
+			discountStart === null ||
+			discountEnd === null ||
+			maxDiscount === null
+		)
+			// Added matchedVariant check and null checks for discount properties
 			return {
 				basis,
 				basePriceTotal: null,
@@ -132,9 +139,13 @@ const Product = () => {
 				discountedPriceTotal: null,
 			};
 
-		// Base total price
+		// Calculate the effective base price per unit/sq.ft including additional variant price
+		const effectiveBasePricePerUnit =
+			basePrice + (matchedVariant.additionalPrice || 0);
+
+		// Base total price: Multiply the effective base price per unit by the basis (quantity or sqFeet)
 		const basePriceTotal = parseFloat(
-			(basis * (basePrice + matchedVariant.additionalPrice)).toFixed(2)
+			(basis * effectiveBasePricePerUnit).toFixed(2)
 		);
 
 		// Calculate linear discount percentage
@@ -169,52 +180,55 @@ const Product = () => {
 
 	useEffect(() => {
 		if (product && matchedVariant) {
-			if (product.pricingType === "flat") {
-				const { appliedDiscountPercentage, discountedPriceTotal } =
-					calculateFinalPricing(product, matchedVariant, productQuantity);
+			// The `basis` for calculateFinalPricing depends on `pricingType`
+			const basisForPricing =
+				product.pricingType === "square-feet" ? sqFeet : productQuantity;
 
-				if (!discountedPriceTotal) return;
+			const { appliedDiscountPercentage, discountedPriceTotal } =
+				calculateFinalPricing(product, matchedVariant, basisForPricing);
 
-				setDiscountPercentage(appliedDiscountPercentage || 0);
-
-				const newDesignCharge =
-					discountedPriceTotal > 1000
-						? 0
-						: product?.basePrice && product?.basePrice < 1000
-						? 250
-						: 0;
-
-				setDesignCharge(newDesignCharge);
-
-				setTotalPrice(Math.floor(discountedPriceTotal + designCharge));
-			} else if (product.pricingType === "square-feet") {
-				const { appliedDiscountPercentage, discountedPriceTotal } =
-					calculateFinalPricing(product, matchedVariant, sqFeet);
-				if (!discountedPriceTotal) return;
-
-				setDiscountPercentage(appliedDiscountPercentage || 0);
-
-				const newDesignCharge =
-					discountedPriceTotal * productQuantity > 1000
-						? 0
-						: product?.basePrice && product?.basePrice < 1000
-						? 250
-						: 0;
-
-				setDesignCharge(newDesignCharge);
-
-				setTotalPrice(
-					Math.floor(discountedPriceTotal * productQuantity + designCharge)
-				);
+			if (discountedPriceTotal === null) {
+				// Handle case where pricing couldn't be calculated
+				setTotalPrice(0);
+				setDiscountPercentage(0);
+				setDesignCharge(0);
+				return;
 			}
+
+			setDiscountPercentage(appliedDiscountPercentage || 0);
+
+			// Design charge calculation now uses discountedPriceTotal
+			const newDesignCharge =
+				discountedPriceTotal > 1000
+					? 0
+					: product?.basePrice && product?.basePrice < 1000
+					? 250
+					: 0;
+
+			setDesignCharge(newDesignCharge);
+
+			// Total price calculation now directly uses discountedPriceTotal
+			setTotalPrice(Math.floor(discountedPriceTotal + newDesignCharge));
+		} else if (product) {
+			// If product is loaded but no variant is matched, show base price initially
+			// You might want to disable "Add to Cart" until a variant is selected.
+			setTotalPrice(product.basePrice || 0);
+			setDiscountPercentage(0);
+			setDesignCharge(
+				product?.basePrice && product?.basePrice < 1000 ? 250 : 0
+			);
+		} else {
+			// Reset if product is null (e.g., on initial load or not found)
+			setTotalPrice(0);
+			setDiscountPercentage(0);
+			setDesignCharge(0);
 		}
 	}, [
 		selectedVariationItems,
 		productQuantity,
 		sqFeet,
-		designCharge,
-		matchedVariant,
 		product,
+		matchedVariant,
 	]);
 
 	useEffect(() => {
@@ -234,7 +248,7 @@ const Product = () => {
 			foundProduct?.basePrice && foundProduct?.basePrice < 1000 ? 250 : 0
 		);
 		setProductQuantity(foundProduct?.minOrderQuantity || 1);
-	}, [products, loading, slug, navigate, setExcludeProductId]); // Added dependencies
+	}, [products, loading, slug, navigate, setExcludeProductId]);
 
 	useEffect(() => {
 		if (product) {
@@ -262,7 +276,7 @@ const Product = () => {
 
 			if (product && productQuantity < product?.minOrderQuantity) {
 				throw new Error(
-					`You must be order minimum ${product?.minOrderQuantity} pieces.`
+					`You must order minimum ${product?.minOrderQuantity} pieces.`
 				);
 			} else if (product && matchedVariant && totalPrice && productQuantity) {
 				if (!token || !customer) {
@@ -358,7 +372,6 @@ const Product = () => {
 							</BreadcrumbItem>
 							<BreadcrumbSeparator className="font-medium" />
 							<BreadcrumbItem>
-								{/* Using product?.name for breadcrumb link text to be more readable */}
 								<Link
 									to={`${routes.products.path}/${product?.slug}`}
 									className="text-base xl:text-lg"
@@ -500,8 +513,6 @@ const Product = () => {
 
 				{/* Right Column: Product Price Card (col-span-1 on xl) */}
 				<div className="w-full xl:col-span-1 mt-6 xl:mt-0 xl:sticky top-10 xl:top-32">
-					{" "}
-					{/* Removed negative margin here */}
 					<div className="w-full xl:max-w-full xl:mx-auto">
 						<Card className="shadow-lg">
 							{cartLoading && (
@@ -519,8 +530,13 @@ const Product = () => {
 									<div className="flex items-start justify-center flex-col gap-2">
 										{!loading && product && (
 											<>
+												{/* Displaying effective base price per unit */}
 												<h3 className="text-2xl xl:text-4xl font-semibold">
-													{currencySymbol} {formatPrice(product?.basePrice)}
+													{currencySymbol}{" "}
+													{formatPrice(
+														product.basePrice +
+															(matchedVariant?.additionalPrice || 0)
+													)}
 												</h3>
 												<span className="text-gray font-manrope text-sm xl:text-base font-medium">
 													Minimum Order Quantity {product?.minOrderQuantity}{" "}
@@ -572,7 +588,10 @@ const Product = () => {
 
 										{!loading &&
 											product.variations.map((productVariation, index) => (
-												<div className="w-full py-2 flex items-start justify-center gap-2 flex-col flex-wrap">
+												<div
+													key={productVariation.variationId}
+													className="w-full py-2 flex items-start justify-center gap-2 flex-col flex-wrap"
+												>
 													<h5 className="text-base xl:text-lg font-medium">
 														Step {index + 1}:{" "}
 														<span className="font-normal">
@@ -682,7 +701,7 @@ const Product = () => {
 																type="single"
 																value={unit}
 																onValueChange={(value) =>
-																	value && setUnit(value as any)
+																	value && setUnit(value as "inches" | "feet")
 																}
 																className="border border-gray/50 rounded-md"
 															>
@@ -777,13 +796,18 @@ const Product = () => {
 
 								<Separator orientation="horizontal" className="bg-gray/30" />
 								<div className="w-full pt-5 flex items-center justify-between flex-col gap-2">
+									{/* Unit Price now includes additional variant price */}
 									{!loading && product && (
 										<div className="w-full flex items-center justify-between flex-wrap">
 											<span className="text-base xl:text-lg font-medium">
 												Unit Price {currencyCode}
 											</span>
 											<span className="text-xl font-medium">
-												{currencySymbol} {formatPrice(product.basePrice)}
+												{currencySymbol}{" "}
+												{formatPrice(
+													product.basePrice +
+														(matchedVariant?.additionalPrice || 0)
+												)}
 											</span>
 										</div>
 									)}
@@ -801,27 +825,28 @@ const Product = () => {
 												</div>
 											))}
 
-									<div className="w-full flex items-center justify-between flex-wrap">
-										{!loading && product && (
-											<>
-												<span className="text-base xl:text-lg font-medium">
-													Additional Price {currencyCode}
-												</span>
-												<span className="text-xl font-medium">
-													{currencySymbol}{" "}
-													{matchedVariant?.additionalPrice
-														? formatPrice(matchedVariant?.additionalPrice)
-														: 0}
-												</span>
-											</>
-										)}
-										{loading && (
-											<>
-												<Skeleton className="h-6 w-36" />
-												<Skeleton className="h-6 w-24" />
-											</>
-										)}
-									</div>
+									{/* Removed "Additional Price" display */}
+									{/* <div className="w-full flex items-center justify-between flex-wrap">
+                                        {!loading && product && (
+                                            <>
+                                                <span className="text-base xl:text-lg font-medium">
+                                                    Additional Price {currencyCode}
+                                                </span>
+                                                <span className="text-xl font-medium">
+                                                    {currencySymbol}{" "}
+                                                    {matchedVariant?.additionalPrice
+                                                        ? formatPrice(matchedVariant?.additionalPrice)
+                                                        : 0}
+                                                </span>
+                                            </>
+                                        )}
+                                        {loading && (
+                                            <>
+                                                <Skeleton className="h-6 w-36" />
+                                                <Skeleton className="h-6 w-24" />
+                                            </>
+                                        )}
+                                    </div> */}
 
 									<div className="w-full flex items-center justify-between flex-wrap">
 										{!loading && product && (
@@ -909,12 +934,7 @@ const Product = () => {
 				</div>
 
 				{/* Bottom-Left Column: Product Attributes & Reviews */}
-				{/* This div should be outside the main product content grid if you want it to always appear below the main image area */}
-				{/* However, since you want it in the 'left' column on xl, we keep it in the grid,
-                    but remove the negative margin and let it flow */}
-				<div className="w-full xl:col-span-2 mt-10 xl:mt-0 pr-0 overflow-hidden">
-					{" "}
-					{/* Removed negative margin here and pr-3 was removed */}
+				<div className="w-full xl:col-span-2 mt-10 xl:mt-0 overflow-hidden">
 					{!loading && product && <ProductAttributes product={product} />}
 					{loading &&
 						Array(5)
@@ -937,10 +957,9 @@ const Product = () => {
 									</div>
 								</div>
 							))}
+
 					{/* review product */}
-					<div className="w-full py-5 pr-0 mt-5 h-auto">
-						{" "}
-						{/* Removed pr-4 */}
+					<div className="w-full py-5 mt-5 h-auto">
 						{!loading && product && product.reviews && (
 							<>
 								<Separator orientation="horizontal" className="bg-gray/30" />
@@ -993,12 +1012,9 @@ const Product = () => {
 				</div>
 				<div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 place-items-start">
 					{randomProducts &&
-						randomProducts
-							// .filter((product) => product.slug !== slug) // This can filter out the current product if you want
-							// .slice(0, 4) // Limit to 4 if desired
-							.map((product, index) => (
-								<ProductCard key={index} product={product} />
-							))}
+						randomProducts.map((product, index) => (
+							<ProductCard key={index} product={product} />
+						))}
 				</div>
 			</div>
 		</section>
