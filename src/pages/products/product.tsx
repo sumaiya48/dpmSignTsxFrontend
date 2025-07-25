@@ -230,9 +230,11 @@ const Product = () => {
 		setProduct(foundProduct); // Set the product state
 		setExcludeProductId(foundProduct.productId); // Exclude the product from random products
 		setActiveProductImage(foundProduct?.images[0]);
-		setDesignCharge(product?.basePrice && product?.basePrice < 1000 ? 250 : 0);
-		setProductQuantity(product?.minOrderQuantity || 1);
-	}, [products, loading]);
+		setDesignCharge(
+			foundProduct?.basePrice && foundProduct?.basePrice < 1000 ? 250 : 0
+		);
+		setProductQuantity(foundProduct?.minOrderQuantity || 1);
+	}, [products, loading, slug, navigate, setExcludeProductId]); // Added dependencies
 
 	useEffect(() => {
 		if (product) {
@@ -301,7 +303,7 @@ const Product = () => {
 				);
 				setWidth(12);
 				setHeight(12);
-				setSqFeet(calculateSquareFeet(width, height));
+				setSqFeet(calculateSquareFeet(12, 12)); // Recalculate sqFeet with default width/height
 				setProductQuantity(product?.minOrderQuantity || 1);
 				await fetchCartItems();
 			}
@@ -331,7 +333,6 @@ const Product = () => {
 
 	return (
 		<section className="py-8 xl:py-16 w-11/12 mx-auto">
-
 			{/* header */}
 			<div className="row pb-5">
 				{!loading && (
@@ -357,12 +358,13 @@ const Product = () => {
 							</BreadcrumbItem>
 							<BreadcrumbSeparator className="font-medium" />
 							<BreadcrumbItem>
+								{/* Using product?.name for breadcrumb link text to be more readable */}
 								<Link
 									to={`${routes.products.path}/${product?.slug}`}
 									className="text-base xl:text-lg"
 								>
 									<BreadcrumbLink className="font-medium hover:text-skyblue transition-all duration-300">
-										{product?.slug}
+										{product?.name} {/* Changed from product?.slug */}
 									</BreadcrumbLink>
 								</Link>
 							</BreadcrumbItem>
@@ -410,11 +412,13 @@ const Product = () => {
 				</div>
 			</div>
 
-			<div className="row xl:relative  pb-10 grid grid-cols-1 xl:grid-cols-3  place-items-center items-start justify-between  gap-0 xl:gap-8">
-				<div className="w-full flex flex-col-reverse md:grid md:grid-cols-5 gap-2 col-span-2">
+			{/* Main Product Content Area */}
+			<div className="row xl:relative pb-10 grid grid-cols-1 xl:grid-cols-3 place-items-center items-start justify-between gap-0 xl:gap-8">
+				{/* Left Column: Images (col-span-2 on xl) */}
+				<div className="w-full flex flex-col-reverse md:grid md:grid-cols-5 gap-2 xl:col-span-2">
 					{!loading && product && (
 						<>
-							{/* Images Slider */}
+							{/* Images Slider (Thumbnails) */}
 							<div className="w-full h-full">
 								<Swiper
 									spaceBetween={8}
@@ -433,7 +437,7 @@ const Product = () => {
 								>
 									{product?.images.map((image, index) => (
 										<SwiperSlide key={index}>
-											<div className="flex items-center justify-center rounded-md overflow-hidden border-2rem border-transparent hover:border-skyblue cursor-pointer transition-all duration-300">
+											<div className="flex items-center justify-center rounded-md overflow-hidden border-2 border-transparent hover:border-skyblue cursor-pointer transition-all duration-300">
 												<img
 													className="w-40 h-20 object-cover object-center"
 													onClick={() => setActiveProductImage(image)}
@@ -446,8 +450,8 @@ const Product = () => {
 								</Swiper>
 							</div>
 
-							{/* Product IMG */}
-							<div className="w-full col-span-4 ">
+							{/* Main Product Image */}
+							<div className="w-full col-span-4">
 								<Dialog>
 									<DialogTrigger asChild>
 										<div className="flex items-center justify-center rounded-md overflow-hidden cursor-pointer">
@@ -494,8 +498,10 @@ const Product = () => {
 					)}
 				</div>
 
-				{/* Product Price Card */}
-				<div className="w-full xl:sticky mt-6 top-10 xl:top-32">
+				{/* Right Column: Product Price Card (col-span-1 on xl) */}
+				<div className="w-full xl:col-span-1 mt-6 xl:mt-0 xl:sticky top-10 xl:top-32">
+					{" "}
+					{/* Removed negative margin here */}
 					<div className="w-full xl:max-w-full xl:mx-auto">
 						<Card className="shadow-lg">
 							{cartLoading && (
@@ -648,7 +654,7 @@ const Product = () => {
 																onChange={(e) => {
 																	if (matchedVariant) {
 																		setWidth(
-																			Math.round(Number(e.target.value))
+																			parseFloat(e.target.value) // Use parseFloat for decimal steps
 																		);
 																	}
 																}}
@@ -666,7 +672,7 @@ const Product = () => {
 																onChange={(e) => {
 																	if (matchedVariant) {
 																		setHeight(
-																			Math.round(Number(e.target.value))
+																			parseFloat(e.target.value) // Use parseFloat for decimal steps
 																		);
 																	}
 																}}
@@ -695,10 +701,6 @@ const Product = () => {
 																	ft
 																</ToggleGroupItem>
 															</ToggleGroup>
-
-															{/* <span className="text-sm text-muted-foreground">
-																{unit}
-															</span> */}
 														</div>
 														<div className="flex items-center gap-2">
 															<span className="text-sm text-muted-foreground">
@@ -874,7 +876,7 @@ const Product = () => {
 								{!loading && product && (
 									<div className="w-full flex gap-1 xl:gap-3 items-center">
 										<Button
-										className="w-36 text-sm lg:text-lg lg:w-44 xl:text-xl xl:w-60"
+											className="w-36 text-sm lg:text-lg lg:w-44 xl:text-xl xl:w-60"
 											onClick={() => {
 												handleAddToCart().then(() => {
 													navigate(routes.checkout.path);
@@ -891,7 +893,7 @@ const Product = () => {
 											Send Order Request
 										</Button>
 										<Button
-										className="w-30 text-sm lg:text-lg lg:w-40 xl:text-xl xl:w-52"
+											className="w-30 text-sm lg:text-lg lg:w-40 xl:text-xl xl:w-52"
 											onClick={handleAddToCart}
 											disabled={matchedVariant ? false : true}
 											variant="secondary"
@@ -906,7 +908,13 @@ const Product = () => {
 					</div>
 				</div>
 
-				<div className="w-full col-span-2 mt-10 xl:-mt-[400px] xl:pr-3 overflow-hidden">
+				{/* Bottom-Left Column: Product Attributes & Reviews */}
+				{/* This div should be outside the main product content grid if you want it to always appear below the main image area */}
+				{/* However, since you want it in the 'left' column on xl, we keep it in the grid,
+                    but remove the negative margin and let it flow */}
+				<div className="w-full xl:col-span-2 mt-10 xl:mt-0 pr-0 overflow-hidden">
+					{" "}
+					{/* Removed negative margin here and pr-3 was removed */}
 					{!loading && product && <ProductAttributes product={product} />}
 					{loading &&
 						Array(5)
@@ -929,12 +937,10 @@ const Product = () => {
 									</div>
 								</div>
 							))}
-				</div>
-
-				{/* review product */}
-
-				<div className="w-full col-span-2 grid grid-cols-1 xl:grid-cols-6 items-start justify-center place-items-center">
-					<div className="w-full xl:col-span-6 py-5 pr-4 mt-5 h-auto">
+					{/* review product */}
+					<div className="w-full py-5 pr-0 mt-5 h-auto">
+						{" "}
+						{/* Removed pr-4 */}
 						{!loading && product && product.reviews && (
 							<>
 								<Separator orientation="horizontal" className="bg-gray/30" />
@@ -978,8 +984,7 @@ const Product = () => {
 				</div>
 			</div>
 
-
-						{/* related products */}
+			{/* related products */}
 			<div className="row py-1 space-y-8">
 				<div className="py-1">
 					<h2 className="w-full text-center text-3xl lg:text-4xl font-semibold py-4 relative after:content-[''] after:absolute after:w-20 after:h-[0.3rem] after:rounded-full after:bg-skyblue after:left-[50%] after:-translate-x-1/2 after:-bottom-1 after:transition-all after:duration-300">
@@ -989,18 +994,11 @@ const Product = () => {
 				<div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 place-items-start">
 					{randomProducts &&
 						randomProducts
-							// .filter((product) => product.slug !== slug)
-							// .slice(0, 4)
+							// .filter((product) => product.slug !== slug) // This can filter out the current product if you want
+							// .slice(0, 4) // Limit to 4 if desired
 							.map((product, index) => (
 								<ProductCard key={index} product={product} />
 							))}
-
-					{/* {products
-						.filter((product) => product.slug !== slug)
-						.slice(0, 4)
-						.map((product, index) => (
-							<ProductCard key={index} product={product} />
-						))} */}
 				</div>
 			</div>
 		</section>
