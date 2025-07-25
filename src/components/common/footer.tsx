@@ -164,10 +164,10 @@ const Footer = () => {
 
 					<h6 className="w-full text-xs lg:text-lg font-normal text-center  lg:text-left border-t-2 mt-6 pt-4 border-gray">
 						Copyright © {new Date().getFullYear()} Dhaka Plastic & Metal.{" "}
-						<Link to={routes.sitemap.path} className="text-skyblue underline">
+						{/* <Link to={routes.sitemap.path} className="text-skyblue underline">
 							Sitemap.
 						</Link>{" "}
-						Developed by Recursivee.
+						Developed by Recursivee. */}
 					</h6>
 				</div>
 			</div>

@@ -173,8 +173,9 @@ const ProductReview = ({
 				)}
 			</div>
 
+
+
 			{/* Review Form */}
-			{token ? (
 				<div className="bg-gray-100 py-6 rounded-md">
 					{loading && (
 						<>
@@ -283,6 +284,11 @@ const ProductReview = ({
 						<Button type="submit">Submit Review</Button>
 					</form>
 				</div>
+
+
+{/* review from authenticate customer  */}
+			{/* {token ? (
+				// copy paste the review form and paste here
 			) : (
 				<div className="w-full">
 					<p className="text-base font-semibold">
@@ -293,7 +299,7 @@ const ProductReview = ({
 						to give a review on this product.
 					</p>
 				</div>
-			)}
+			)} */}
 		</div>
 	);
 };

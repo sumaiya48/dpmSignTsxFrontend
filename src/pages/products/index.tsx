@@ -123,7 +123,7 @@ const Products = () => {
 				</div>
 			</section> */}
 
-			<section className="py-10 w-10/12 mx-auto">
+			<section className="py-10 w-11/12 mx-auto">
 				<div className="row flex items-center justify-between xl:justify-end">
 					<div className="xl:hidden">
 						<Sheet>

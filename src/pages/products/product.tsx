@@ -330,7 +330,9 @@ const Product = () => {
 	};
 
 	return (
-		<section className="py-16">
+		<section className="py-16 w-11/12 mx-auto">
+
+			{/* header */}
 			<div className="row pb-5">
 				{!loading && (
 					<Breadcrumb className="pb-5">
@@ -408,7 +410,7 @@ const Product = () => {
 				</div>
 			</div>
 
-			<div className="row xl:relative h-auto pb-20 grid grid-cols-1 xl:grid-cols-3 xl:grid-rows-1 place-items-center items-start justify-between space-y-5 gap-0 xl:gap-8">
+			<div className="row xl:relative  pb-10 grid grid-cols-1 xl:grid-cols-3  place-items-center items-start justify-between  gap-0 xl:gap-8">
 				<div className="w-full flex flex-col-reverse md:grid md:grid-cols-5 gap-2 col-span-2">
 					{!loading && product && (
 						<>
@@ -445,21 +447,21 @@ const Product = () => {
 							</div>
 
 							{/* Product IMG */}
-							<div className="w-full col-span-4">
+							<div className="w-full col-span-4 ">
 								<Dialog>
 									<DialogTrigger asChild>
 										<div className="flex items-center justify-center rounded-md overflow-hidden cursor-pointer">
 											<img
-												className="max-w-full"
+												className="max-w-full h-auto"
 												src={activeProductImage?.imageUrl}
 												alt={product?.name}
 											/>
 										</div>
 									</DialogTrigger>
 									<DialogContent className="max-w-full w-full xl:w-[1000px] h-[80vh] overflow-auto">
-										<div className="mt-5">
+										<div className="mt-0">
 											<img
-												className="max-w-full"
+												className="max-w-full h-auto"
 												src={activeProductImage?.imageUrl}
 												alt={product?.name}
 											/>
@@ -493,7 +495,7 @@ const Product = () => {
 				</div>
 
 				{/* Product Price Card */}
-				<div className="w-full xl:sticky xl:top-32">
+				<div className="w-full lg:sticky xl:top-32">
 					<div className="w-full xl:max-w-full xl:mx-auto">
 						<Card className="shadow-lg">
 							{cartLoading && (
@@ -641,7 +643,7 @@ const Product = () => {
 																type="number"
 																min={unit === "feet" ? 0.08 : 1} // Minimum 1 inch or 0.08 feet
 																step={unit === "feet" ? 0.01 : 1}
-																className="w-24 input-type-number"
+																className="w-16 input-type-number"
 																value={width}
 																onChange={(e) => {
 																	if (matchedVariant) {
@@ -659,7 +661,7 @@ const Product = () => {
 																type="number"
 																min={unit === "feet" ? 0.08 : 1}
 																step={unit === "feet" ? 0.01 : 1}
-																className="w-24 input-type-number"
+																className="w-16 input-type-number"
 																value={height}
 																onChange={(e) => {
 																	if (matchedVariant) {
@@ -694,15 +696,15 @@ const Product = () => {
 																</ToggleGroupItem>
 															</ToggleGroup>
 
-															<span className="text-sm text-muted-foreground">
+															{/* <span className="text-sm text-muted-foreground">
 																{unit}
-															</span>
+															</span> */}
 														</div>
 														<div className="flex items-center gap-2">
 															<span className="text-sm text-muted-foreground">
 																=
 															</span>
-															<span className="font-medium">
+															<span className="font-medium text-sm">
 																{sqFeet} sq. ft
 															</span>
 														</div>
@@ -902,7 +904,7 @@ const Product = () => {
 					</div>
 				</div>
 
-				<div className="w-full col-span-2 mt-0 xl:pr-8 overflow-hidden">
+				<div className="w-full col-span-2 lg:-mt-[400px] xl:pr-3 overflow-hidden">
 					{!loading && product && <ProductAttributes product={product} />}
 					{loading &&
 						Array(5)
@@ -927,8 +929,10 @@ const Product = () => {
 							))}
 				</div>
 
+				{/* review product */}
+
 				<div className="w-full col-span-2 grid grid-cols-1 xl:grid-cols-6 items-start justify-center place-items-center">
-					<div className="w-full xl:col-span-6 py-5 pr-4 mt-20 h-auto">
+					<div className="w-full xl:col-span-6 py-5 pr-4 mt-5 h-auto">
 						{!loading && product && product.reviews && (
 							<>
 								<Separator orientation="horizontal" className="bg-gray/30" />
@@ -972,13 +976,15 @@ const Product = () => {
 				</div>
 			</div>
 
+
+						{/* related products */}
 			<div className="row py-1 space-y-8">
 				<div className="py-1">
 					<h2 className="w-full text-center text-3xl lg:text-4xl font-semibold py-4 relative after:content-[''] after:absolute after:w-20 after:h-[0.3rem] after:rounded-full after:bg-skyblue after:left-[50%] after:-translate-x-1/2 after:-bottom-1 after:transition-all after:duration-300">
 						Related Products
 					</h2>
 				</div>
-				<div className="w-full grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6 place-items-start">
+				<div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 place-items-start">
 					{randomProducts &&
 						randomProducts
 							// .filter((product) => product.slug !== slug)
