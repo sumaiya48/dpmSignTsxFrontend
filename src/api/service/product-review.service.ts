@@ -41,8 +41,21 @@ class ProductReview {
 		this.fetchReviewUrl = `${apiBaseURL}/product-review`;
 		this.createReviewUrl = `${apiBaseURL}/product-review/create`;
 		this.reviewCreationSchema = Joi.object({
-			description: this.schema.description,
-		});
+  name: Joi.string().trim().min(2).required().messages({
+    "string.base": "Name must be a string.",
+    "string.empty": "Name cannot be empty.",
+    "string.min": "Name must be at least 2 characters.",
+    "any.required": "Name is required.",
+  }),
+  email: Joi.string().email({ tlds: { allow: false } }).required().messages({
+    "string.email": "Email must be valid.",
+    "string.empty": "Email cannot be empty.",
+    "any.required": "Email is required.",
+  }),
+  rating: this.schema.rating,
+  description: this.schema.description,
+});
+
 	}
 
 	fetchAllReview = async (
@@ -106,7 +119,7 @@ class ProductReview {
 		rating: number,
 		description: string,
 		productId: number,
-		customerId: number
+		customerId: number | null
 	) => {
 		try {
 			const body = {
@@ -116,11 +129,15 @@ class ProductReview {
 				customerId,
 			};
 
-			const response = await apiClient.post(this.createReviewUrl, body, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
+			const headers: Record<string, string> = {};
+if (token && token.trim() !== "") {
+  headers["Authorization"] = `Bearer ${token}`;
+}
+
+const response = await apiClient.post(this.createReviewUrl, body, {
+  headers,
+});
+
 			return response.data;
 		} catch (err: any) {
 			let fetchRequestError: ApiError;

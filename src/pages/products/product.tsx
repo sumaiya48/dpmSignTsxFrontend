@@ -495,7 +495,7 @@ const Product = () => {
 				</div>
 
 				{/* Product Price Card */}
-				<div className="w-full lg:sticky xl:top-32">
+				<div className="w-full lg:sticky top-10 xl:top-32">
 					<div className="w-full xl:max-w-full xl:mx-auto">
 						<Card className="shadow-lg">
 							{cartLoading && (
